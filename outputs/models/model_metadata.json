@@ -1,0 +1,49 @@
+{
+  "feature_columns": [
+    "fico_score",
+    "income",
+    "debt_to_income",
+    "utilization_rate",
+    "inquiries_last_6m",
+    "num_open_trades",
+    "loan_amount",
+    "term",
+    "apr",
+    "employment_length",
+    "age",
+    "fico_score_missing",
+    "income_missing",
+    "inquiries_last_6m_missing",
+    "loan_to_income",
+    "payment_to_income",
+    "debt_burden_score",
+    "high_utilization",
+    "high_inquiries",
+    "product_type_encoded",
+    "state_encoded"
+  ],
+  "special_values": {
+    "fico_score": 99999,
+    "income": -1,
+    "inquiries_last_6m": 99
+  },
+  "medians": {
+    "fico_score": 700.0,
+    "income": 49027.0,
+    "inquiries_last_6m": 2.0
+  },
+  "train_vintage_end": 202212,
+  "test_vintage_start": 202401,
+  "metrics": {
+    "xgboost": {
+      "train_auc": 0.7715309429600661,
+      "test_auc": 0.6845985193506166,
+      "test_ks": 0.2853178041383595
+    },
+    "logistic_regression": {
+      "train_auc": 0.6879097334941641,
+      "test_auc": 0.6617844457317212,
+      "test_ks": 0.2667132915755953
+    }
+  }
+}

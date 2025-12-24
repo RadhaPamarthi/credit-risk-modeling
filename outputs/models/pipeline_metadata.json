@@ -1,0 +1,132 @@
+{
+  "run_id": "1766598125641265",
+  "timestamp": "2025-12-24T11:42:06.409947",
+  "parameters": {
+    "data_path": "data/credit_risk_data_enhanced.csv",
+    "train_vintage_end": 202212,
+    "test_vintage_start": 202401,
+    "random_state": 42
+  },
+  "data_stats": {
+    "n_records": 50000,
+    "train_size": 26755,
+    "test_size": 9984,
+    "train_default_rate": 0.032068772192113626,
+    "test_default_rate": 0.022736378205128204
+  },
+  "medians": {
+    "fico_score": 700.0,
+    "income": 49027.0,
+    "inquiries_last_6m": 2.0
+  },
+  "preprocessing": {
+    "medians": {
+      "fico_score": 700.0,
+      "income": 49027.0,
+      "inquiries_last_6m": 2.0
+    },
+    "missing_stats": {
+      "fico_score": {
+        "n_missing": 2500,
+        "pct_missing": 5.0,
+        "median": 700.0
+      },
+      "income": {
+        "n_missing": 1500,
+        "pct_missing": 3.0,
+        "median": 49027.0
+      },
+      "inquiries_last_6m": {
+        "n_missing": 1000,
+        "pct_missing": 2.0,
+        "median": 2.0
+      }
+    }
+  },
+  "feature_columns": [
+    "fico_score",
+    "income",
+    "debt_to_income",
+    "utilization_rate",
+    "inquiries_last_6m",
+    "num_open_trades",
+    "loan_amount",
+    "term",
+    "apr",
+    "employment_length",
+    "age",
+    "fico_score_missing",
+    "income_missing",
+    "inquiries_last_6m_missing",
+    "loan_to_income",
+    "payment_to_income",
+    "debt_burden_score",
+    "high_utilization",
+    "high_inquiries",
+    "product_type_encoded",
+    "state_encoded"
+  ],
+  "leakage_features_removed": [
+    "days_past_due_current",
+    "total_payments_to_date",
+    "months_on_book"
+  ],
+  "metrics": {
+    "xgboost": {
+      "train_auc": 0.7715309429600661,
+      "test_auc": 0.6845985193506166,
+      "test_ks": 0.2853178041383595,
+      "test_auc_pr": 0.04041797568348831
+    },
+    "logistic_regression": {
+      "train_auc": 0.6879097334941641,
+      "test_auc": 0.6617844457317212,
+      "test_ks": 0.2667132915755953,
+      "test_auc_pr": 0.03920944404217783
+    }
+  },
+  "best_model": "xgboost",
+  "best_auc": 0.6845985193506166,
+  "feature_importance": [
+    {
+      "feature": "fico_score",
+      "importance": 0.11994779855012894
+    },
+    {
+      "feature": "fico_score_missing",
+      "importance": 0.1112014427781105
+    },
+    {
+      "feature": "debt_to_income",
+      "importance": 0.09451454132795334
+    },
+    {
+      "feature": "debt_burden_score",
+      "importance": 0.08923375606536865
+    },
+    {
+      "feature": "inquiries_last_6m_missing",
+      "importance": 0.061096224933862686
+    },
+    {
+      "feature": "income_missing",
+      "importance": 0.053617559373378754
+    },
+    {
+      "feature": "utilization_rate",
+      "importance": 0.05207894369959831
+    },
+    {
+      "feature": "income",
+      "importance": 0.0490306094288826
+    },
+    {
+      "feature": "num_open_trades",
+      "importance": 0.04092564806342125
+    },
+    {
+      "feature": "inquiries_last_6m",
+      "importance": 0.040110617876052856
+    }
+  ]
+}

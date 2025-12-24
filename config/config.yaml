@@ -1,0 +1,198 @@
+# Credit Risk Model Configuration
+
+environment:
+  default: "dev"
+  dev:
+    debug: true
+    log_level: "DEBUG"
+  staging:
+    debug: true
+    log_level: "INFO"
+  prod:
+    debug: false
+    log_level: "WARNING"
+
+data:
+  input_path:
+    dev: "data/credit_risk_data_enhanced.csv"
+    staging: "s3://bestegg-ml-staging/credit-risk/data/credit_risk_data.parquet"
+    prod: "s3://bestegg-ml-prod/credit-risk/data/credit_risk_data.parquet"
+  target_column: "default_12m"
+  weight_column: "sample_weight"
+  vintage_column: "vintage"
+  id_columns:
+    - "loan_id"
+    - "origination_date"
+    - "vintage"
+  special_values:
+    fico_score: 99999
+    income: -1
+    inquiries_last_6m: 99
+
+features:
+  core_features:
+    - "fico_score"
+    - "income"
+    - "debt_to_income"
+    - "utilization_rate"
+    - "inquiries_last_6m"
+    - "num_open_trades"
+    - "loan_amount"
+    - "term"
+    - "apr"
+    - "employment_length"
+    - "age"
+  categorical_features:
+    - "product_type"
+    - "state"
+  leakage_features:
+    - "days_past_due_current"
+    - "total_payments_to_date"
+    - "months_on_book"
+  thresholds:
+    high_utilization: 0.70
+    high_inquiries: 3
+
+validation:
+  train_vintage_end: 202212
+  test_vintage_start: 202401
+  n_folds: 5
+  stratified: true
+  random_state: 42
+
+model:
+  version: "1.0.0"
+  name: "credit_risk_xgb"
+  xgboost:
+    n_estimators: 100
+    max_depth: 3
+    learning_rate: 0.05
+    subsample: 0.7
+    colsample_bytree: 0.7
+    min_child_weight: 50
+    reg_lambda: 10
+    reg_alpha: 1
+    gamma: 1
+    eval_metric: "auc"
+  logistic_regression:
+    class_weight: "balanced"
+    max_iter: 1000
+    solver: "lbfgs"
+
+storage:
+  dev:
+    type: "local"
+    model_dir: "outputs/models"
+    plots_dir: "outputs/plots"
+    scoring_dir: "outputs/scoring"
+  staging:
+    type: "s3"
+    bucket: "bestegg-ml-staging"
+    model_dir: "s3://bestegg-ml-staging/credit-risk/models"
+    plots_dir: "s3://bestegg-ml-staging/credit-risk/plots"
+    scoring_dir: "s3://bestegg-ml-staging/credit-risk/scoring"
+  prod:
+    type: "s3"
+    bucket: "bestegg-ml-prod"
+    model_dir: "s3://bestegg-ml-prod/credit-risk/models"
+    plots_dir: "s3://bestegg-ml-prod/credit-risk/plots"
+    scoring_dir: "s3://bestegg-ml-prod/credit-risk/scoring"
+  artifacts:
+    xgb_model: "xgb_model.pkl"
+    lr_model: "lr_model.pkl"
+    scaler: "scaler.pkl"
+    encoders: "encoders.pkl"
+    metadata: "pipeline_metadata.json"
+
+scoring:
+  batch_size: 10000
+  parallel_workers: 4
+  date_filter:
+    enabled: true
+    start_vintage: 202401
+    end_vintage: 202406
+  output_format:
+    dev: "parquet"
+    staging: "parquet"
+    prod: "redshift"
+  score_columns:
+    probability: "pd_score"
+    decile: "risk_decile"
+    decision: "credit_decision"
+  decision_thresholds:
+    approve_below: 0.03
+    decline_above: 0.15
+  redshift:
+    dev:
+      enabled: false
+    staging:
+      enabled: false
+    prod:
+      enabled: true
+      host: "${REDSHIFT_HOST}"
+      port: 5439
+      database: "analytics"
+      schema: "ml_scores"
+      table: "credit_risk_scores"
+      iam_role: "${REDSHIFT_IAM_ROLE}"
+      write_mode: "append"
+
+aws:
+  region: "us-east-1"
+  s3:
+    model_bucket:
+      staging: "bestegg-ml-staging"
+      prod: "bestegg-ml-prod"
+    scoring_bucket:
+      staging: "bestegg-ml-staging"
+      prod: "bestegg-ml-prod"
+  iam_role: "${AWS_IAM_ROLE}"
+
+monitoring:
+  enabled:
+    dev: false
+    staging: true
+    prod: true
+  psi:
+    warning_threshold: 0.10
+    alert_threshold: 0.25
+  feature_drift:
+    enabled: true
+    features_to_monitor:
+      - "fico_score"
+      - "debt_to_income"
+      - "utilization_rate"
+      - "income"
+  performance:
+    metrics:
+      - "auc"
+      - "ks"
+      - "gini"
+    alert_if_auc_below: 0.60
+  alerting:
+    dev:
+      enabled: false
+    staging:
+      enabled: false
+    prod:
+      enabled: true
+      slack_webhook: "${SLACK_WEBHOOK_URL}"
+      email_recipients:
+        - "ml-team@bestegg.com"
+        - "credit-risk@bestegg.com"
+
+logging:
+  level:
+    dev: "DEBUG"
+    staging: "INFO"
+    prod: "WARNING"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  cloudwatch:
+    dev:
+      enabled: false
+    staging:
+      enabled: false
+    prod:
+      enabled: true
+      log_group: "/ml/credit-risk-model"
+      log_stream_prefix: "scoring-"
